@@ -2,6 +2,11 @@
 
 A React + TypeScript application for configuring prefill mappings in a journey builder workflow. This application allows users to select forms from a directed acyclic graph (DAG) and configure how fields should be prefilled from upstream form data or global data sources.
 
+## Links
+
+- **Live Demo**: [https://preetsojitra2712.github.io/journey-builder-react-challenge](https://preetsojitra2712.github.io/journey-builder-react-challenge)
+- **GitHub Repository**: [https://github.com/preetsojitra2712/journey-builder-react-challenge](https://github.com/preetsojitra2712/journey-builder-react-challenge)
+
 ## Features
 
 - **Form Selection**: Browse and select forms from the journey graph
@@ -158,6 +163,18 @@ npm run preview
 # Run tests
 npm run test
 ```
+
+### Deploy to GitHub Pages
+
+```bash
+# Build and deploy to GitHub Pages
+npm run deploy
+```
+
+This will:
+1. Build the production bundle
+2. Push the `dist` folder to the `gh-pages` branch
+3. GitHub Pages will serve the app at: https://preetsojitra2712.github.io/journey-builder-react-challenge
 
 ## Architecture
 
