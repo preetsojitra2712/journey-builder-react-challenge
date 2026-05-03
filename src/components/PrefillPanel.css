@@ -1,0 +1,51 @@
+.prefill-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: white;
+}
+
+.prefill-panel-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.prefill-panel-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.prefill-panel-form-name {
+  margin: 0.25rem 0 0;
+  font-size: 1rem;
+  color: #3b82f6;
+  font-weight: 500;
+}
+
+.prefill-panel-meta {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.prefill-panel-meta-item {
+  font-size: 0.75rem;
+  color: #64748b;
+  padding: 0.25rem 0.5rem;
+  background-color: #f1f5f9;
+  border-radius: 4px;
+}
+
+.prefill-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 1.5rem;
+}
+
+.prefill-panel-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}

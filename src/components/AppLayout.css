@@ -1,0 +1,40 @@
+.app-layout {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+}
+
+.app-layout-left {
+  width: 320px;
+  min-width: 280px;
+  max-width: 400px;
+  border-right: 1px solid #e2e8f0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-layout-right {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .app-layout-left {
+    width: 100%;
+    max-width: none;
+    height: 40%;
+    border-right: none;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .app-layout-right {
+    height: 60%;
+  }
+}

@@ -1,0 +1,59 @@
+.form-list-item {
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: white;
+}
+
+.form-list-item:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
+}
+
+.form-list-item:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.form-list-item.selected {
+  border-color: #3b82f6;
+  background-color: #eff6ff;
+}
+
+.form-list-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.form-list-item-name {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.form-list-item-badge {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.5rem;
+  background-color: #f1f5f9;
+  color: #64748b;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.form-list-item.selected .form-list-item-badge {
+  background-color: #dbeafe;
+  color: #3b82f6;
+}
+
+.form-list-item-id {
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-family: monospace;
+}
