@@ -8,7 +8,17 @@ import {
 } from './graph';
 import { ActionBlueprintGraph } from '../types/journey';
 
-// Mock graph data for testing
+/**
+ * Mock graph data for testing.
+ * Structure matches the actual API response from frontendchallengeserver.
+ * 
+ * Graph structure:
+ *   Form A (no deps)
+ *     ├── Form B (depends on A)
+ *     │     └── Form C (depends on B)
+ *     │           └── Form D (depends on A and C)
+ *     └── Form D (depends on A and C)
+ */
 const createMockGraph = (): ActionBlueprintGraph => ({
   id: 'test-graph',
   tenant_id: 'tenant-1',
@@ -18,10 +28,10 @@ const createMockGraph = (): ActionBlueprintGraph => ({
       id: 'node-a',
       type: 'form',
       data: {
-        id: 'form-a',
-        component_id: 'form-a',
+        id: 'bp_a',
+        component_id: 'form-def-1',
         component_type: 'form',
-        component_key: 'form_a',
+        component_key: 'node-a',
         name: 'Form A',
         prerequisites: [],
       },
@@ -30,36 +40,36 @@ const createMockGraph = (): ActionBlueprintGraph => ({
       id: 'node-b',
       type: 'form',
       data: {
-        id: 'form-b',
-        component_id: 'form-b',
+        id: 'bp_b',
+        component_id: 'form-def-1',
         component_type: 'form',
-        component_key: 'form_b',
+        component_key: 'node-b',
         name: 'Form B',
-        prerequisites: ['form-a'],
+        prerequisites: ['node-a'],
       },
     },
     {
       id: 'node-c',
       type: 'form',
       data: {
-        id: 'form-c',
-        component_id: 'form-c',
+        id: 'bp_c',
+        component_id: 'form-def-1',
         component_type: 'form',
-        component_key: 'form_c',
+        component_key: 'node-c',
         name: 'Form C',
-        prerequisites: ['form-b'],
+        prerequisites: ['node-b'],
       },
     },
     {
       id: 'node-d',
       type: 'form',
       data: {
-        id: 'form-d',
-        component_id: 'form-d',
+        id: 'bp_d',
+        component_id: 'form-def-1',
         component_type: 'form',
-        component_key: 'form_d',
+        component_key: 'node-d',
         name: 'Form D',
-        prerequisites: ['form-a', 'form-c'],
+        prerequisites: ['node-a', 'node-c'],
       },
     },
   ],
@@ -69,10 +79,11 @@ const createMockGraph = (): ActionBlueprintGraph => ({
     { id: 'edge-3', source: 'node-a', target: 'node-d' },
     { id: 'edge-4', source: 'node-c', target: 'node-d' },
   ],
-  forms: {
-    'form-a': {
-      id: 'form-a',
-      name: 'Form A',
+  // Forms as array (matches actual API)
+  forms: [
+    {
+      id: 'form-def-1',
+      name: 'test form',
       field_schema: {
         type: 'object',
         properties: {
@@ -81,37 +92,7 @@ const createMockGraph = (): ActionBlueprintGraph => ({
         },
       },
     },
-    'form-b': {
-      id: 'form-b',
-      name: 'Form B',
-      field_schema: {
-        type: 'object',
-        properties: {
-          phone: { type: 'string', title: 'Phone' },
-        },
-      },
-    },
-    'form-c': {
-      id: 'form-c',
-      name: 'Form C',
-      field_schema: {
-        type: 'object',
-        properties: {
-          address: { type: 'string', title: 'Address' },
-        },
-      },
-    },
-    'form-d': {
-      id: 'form-d',
-      name: 'Form D',
-      field_schema: {
-        type: 'object',
-        properties: {
-          notes: { type: 'string', title: 'Notes' },
-        },
-      },
-    },
-  },
+  ],
 });
 
 describe('getFormNodes', () => {
@@ -120,17 +101,26 @@ describe('getFormNodes', () => {
     const formNodes = getFormNodes(graph);
 
     expect(formNodes).toHaveLength(4);
-    expect(formNodes.map(f => f.id)).toEqual(['form-a', 'form-b', 'form-c', 'form-d']);
+    // IDs are now node IDs
+    expect(formNodes.map(f => f.id)).toEqual(['node-a', 'node-b', 'node-c', 'node-d']);
   });
 
   it('should extract fields from form schema', () => {
     const graph = createMockGraph();
     const formNodes = getFormNodes(graph);
-    const formA = formNodes.find(f => f.id === 'form-a');
+    const formA = formNodes.find(f => f.id === 'node-a');
 
     expect(formA?.fields).toHaveLength(2);
     expect(formA?.fields.map(f => f.key)).toContain('email');
     expect(formA?.fields.map(f => f.key)).toContain('name');
+  });
+
+  it('should use node.data.name for display name', () => {
+    const graph = createMockGraph();
+    const formNodes = getFormNodes(graph);
+    
+    expect(formNodes.find(f => f.id === 'node-a')?.name).toBe('Form A');
+    expect(formNodes.find(f => f.id === 'node-b')?.name).toBe('Form B');
   });
 });
 
@@ -141,8 +131,8 @@ describe('createFormsMap', () => {
     const formsMap = createFormsMap(formNodes);
 
     expect(formsMap.size).toBe(4);
-    expect(formsMap.get('form-a')?.name).toBe('Form A');
-    expect(formsMap.get('form-b')?.name).toBe('Form B');
+    expect(formsMap.get('node-a')?.name).toBe('Form A');
+    expect(formsMap.get('node-b')?.name).toBe('Form B');
   });
 });
 
@@ -152,7 +142,7 @@ describe('getFormById', () => {
     const formNodes = getFormNodes(graph);
     const formsMap = createFormsMap(formNodes);
 
-    const form = getFormById(formsMap, 'form-b');
+    const form = getFormById(formsMap, 'node-b');
     expect(form?.name).toBe('Form B');
   });
 
@@ -173,15 +163,15 @@ describe('getDirectDependencies', () => {
     const formsMap = createFormsMap(formNodes);
 
     // Form B depends directly on Form A
-    const depsB = getDirectDependencies(graph, 'form-b', formsMap);
+    const depsB = getDirectDependencies(graph, 'node-b', formsMap);
     expect(depsB).toHaveLength(1);
-    expect(depsB[0].id).toBe('form-a');
+    expect(depsB[0].id).toBe('node-a');
 
     // Form D depends directly on Form A and Form C
-    const depsD = getDirectDependencies(graph, 'form-d', formsMap);
+    const depsD = getDirectDependencies(graph, 'node-d', formsMap);
     expect(depsD).toHaveLength(2);
-    expect(depsD.map(d => d.id)).toContain('form-a');
-    expect(depsD.map(d => d.id)).toContain('form-c');
+    expect(depsD.map(d => d.id)).toContain('node-a');
+    expect(depsD.map(d => d.id)).toContain('node-c');
   });
 
   it('should return empty array for form with no dependencies', () => {
@@ -189,7 +179,7 @@ describe('getDirectDependencies', () => {
     const formNodes = getFormNodes(graph);
     const formsMap = createFormsMap(formNodes);
 
-    const deps = getDirectDependencies(graph, 'form-a', formsMap);
+    const deps = getDirectDependencies(graph, 'node-a', formsMap);
     expect(deps).toHaveLength(0);
   });
 });
@@ -201,14 +191,14 @@ describe('getTransitiveDependencies', () => {
     const formsMap = createFormsMap(formNodes);
 
     // Form C depends on B (direct) and A (transitive)
-    const depsC = getTransitiveDependencies(graph, 'form-c', formsMap);
+    const depsC = getTransitiveDependencies(graph, 'node-c', formsMap);
     expect(depsC).toHaveLength(1);
-    expect(depsC[0].id).toBe('form-a');
+    expect(depsC[0].id).toBe('node-a');
 
     // Form D depends on A, C (direct) and B (transitive through C)
-    const depsD = getTransitiveDependencies(graph, 'form-d', formsMap);
+    const depsD = getTransitiveDependencies(graph, 'node-d', formsMap);
     expect(depsD).toHaveLength(1);
-    expect(depsD[0].id).toBe('form-b');
+    expect(depsD[0].id).toBe('node-b');
   });
 
   it('should return empty array when no transitive dependencies exist', () => {
@@ -217,7 +207,7 @@ describe('getTransitiveDependencies', () => {
     const formsMap = createFormsMap(formNodes);
 
     // Form B only has direct dependency on A, no transitive
-    const deps = getTransitiveDependencies(graph, 'form-b', formsMap);
+    const deps = getTransitiveDependencies(graph, 'node-b', formsMap);
     expect(deps).toHaveLength(0);
   });
 
@@ -226,7 +216,7 @@ describe('getTransitiveDependencies', () => {
     const formNodes = getFormNodes(graph);
     const formsMap = createFormsMap(formNodes);
 
-    const deps = getTransitiveDependencies(graph, 'form-a', formsMap);
+    const deps = getTransitiveDependencies(graph, 'node-a', formsMap);
     expect(deps).toHaveLength(0);
   });
 
@@ -235,7 +225,7 @@ describe('getTransitiveDependencies', () => {
     const formNodes = getFormNodes(graph);
     const formsMap = createFormsMap(formNodes);
 
-    const depsD = getTransitiveDependencies(graph, 'form-d', formsMap);
+    const depsD = getTransitiveDependencies(graph, 'node-d', formsMap);
     const uniqueIds = new Set(depsD.map(d => d.id));
     expect(uniqueIds.size).toBe(depsD.length);
   });
@@ -248,7 +238,7 @@ describe('cycle safety', () => {
     const formsMap = createFormsMap(formNodes);
 
     // This should not throw or hang
-    const deps = getTransitiveDependencies(graph, 'form-d', formsMap);
+    const deps = getTransitiveDependencies(graph, 'node-d', formsMap);
     expect(deps).toBeDefined();
   });
 });

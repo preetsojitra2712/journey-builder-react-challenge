@@ -12,7 +12,8 @@ export interface ActionBlueprintGraph {
   category?: string;
   nodes: GraphNode[];
   edges: GraphEdge[];
-  forms?: Record<string, FormDefinition>;
+  // Forms can be either an array (actual API) or a Record (for convenience)
+  forms?: FormDefinition[] | Record<string, FormDefinition>;
 }
 
 export interface GraphNode {

@@ -3,24 +3,56 @@ import {
   FormNode,
   FormField,
   FieldProperty,
+  FormDefinition,
 } from '../types/journey';
+
+/**
+ * Normalizes forms from the API response.
+ * The API returns forms as an array, but we convert to a Map for efficient lookup.
+ */
+function normalizeFormsToMap(
+  forms: FormDefinition[] | Record<string, FormDefinition> | undefined
+): Map<string, FormDefinition> {
+  const map = new Map<string, FormDefinition>();
+  
+  if (!forms) return map;
+  
+  if (Array.isArray(forms)) {
+    // API returns forms as an array
+    for (const form of forms) {
+      map.set(form.id, form);
+    }
+  } else {
+    // Forms as a Record (for backwards compatibility)
+    for (const [id, form] of Object.entries(forms)) {
+      map.set(id, form);
+    }
+  }
+  
+  return map;
+}
 
 /**
  * Extracts all form nodes from the graph.
  * Form nodes are identified by having a component_type of 'form'.
+ * Each node references a form definition via component_id.
  */
 export function getFormNodes(graph: ActionBlueprintGraph): FormNode[] {
   const formNodes: FormNode[] = [];
+  const formsMap = normalizeFormsToMap(graph.forms);
   
   for (const node of graph.nodes) {
     if (node.data.component_type === 'form' || node.type === 'form') {
-      const formDef = graph.forms?.[node.data.component_id ?? ''];
+      // Look up form definition by component_id
+      const formDef = formsMap.get(node.data.component_id ?? '');
       const fields = extractFieldsFromSchema(formDef?.field_schema);
       
       formNodes.push({
-        id: node.data.component_id ?? node.data.id,
+        // Use nodeId as the unique identifier (since multiple nodes can share same component_id)
+        id: node.id,
         nodeId: node.id,
-        name: formDef?.name ?? node.data.name ?? node.data.component_key ?? 'Unnamed Form',
+        // Use node.data.name for display (e.g., "Form A", "Form B")
+        name: node.data.name ?? formDef?.name ?? node.data.component_key ?? 'Unnamed Form',
         componentKey: node.data.component_key ?? '',
         fields,
         prerequisites: node.data.prerequisites ?? [],
@@ -121,28 +153,24 @@ export function getTransitiveDependencies(
 }
 
 /**
- * Finds the graph node ID for a given form component ID.
+ * Finds the graph node ID for a given form ID.
+ * Since we use node.id as the form identifier, this is a direct lookup.
  */
-function findNodeIdByFormId(graph: ActionBlueprintGraph, formId: string): string | undefined {
-  const node = graph.nodes.find(
-    n => n.data.component_id === formId || n.data.id === formId
-  );
-  return node?.id;
+function findNodeIdByFormId(_graph: ActionBlueprintGraph, formId: string): string {
+  // formId is already the node.id
+  return formId;
 }
 
 /**
  * Finds a form by its graph node ID.
  */
 function findFormByNodeId(
-  graph: ActionBlueprintGraph,
+  _graph: ActionBlueprintGraph,
   nodeId: string,
   formsMap: Map<string, FormNode>
 ): FormNode | undefined {
-  const node = graph.nodes.find(n => n.id === nodeId);
-  if (!node) return undefined;
-  
-  const formId = node.data.component_id ?? node.data.id;
-  return formsMap.get(formId);
+  // Since we use node.id as the form.id, direct lookup works
+  return formsMap.get(nodeId);
 }
 
 /**
